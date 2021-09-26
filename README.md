@@ -3,7 +3,7 @@
 The ability of this app is to stitch images/screenshots vertically into a new long image. For instance, when a user browses the posts in his/her twitter, they might want to take a few screenshots along scrolling the content. By import those screenshots into this app, the user could get a new generated long image, which combine all screenshots, and remove the overlapped parts between the screenshots.
 
 ### what used?
-- This app utilize the `openCV` framework, and I used a class wrapper [OpenCVSwiftStitch](https://github.com/foundry/OpenCVSwiftStitch) to deal with image stitching.
+- This app utilize the `openCV` framework for image stitching function, and I used a class wrapper [OpenCVSwiftStitch](https://github.com/foundry/OpenCVSwiftStitch) to deal with image stitching.
 - By default, this wrapper could handle Panoramic pictures stitching, however I need stitching images vertically. Thus, I modify the code of `- (UIImage *)rotateToImageOrientation` in `UIImage+Rotate.m` to make it worked for vertical images stitched. In short, I convert image orientation from up, down, right to **left**.
 
 The screenshots below illustrated the workflow of this app.
@@ -23,15 +23,15 @@ The screenshots below illustrated the workflow of this app.
 ```
 # for Mac M1
 post_install do |installer|
-installer.pods_project.build_configurations.each do |config|
-config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
-end
+  installer.pods_project.build_configurations.each do |config|
+    config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+  end
 
-installer.pods_project.targets.each do |target|
-target.build_configurations.each do |config|
-config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
-end
-end
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '9.0'
+    end
+  end
 end
 ```
 2. Close your project and reopen .xcworkspace.
@@ -41,5 +41,5 @@ That is all, you are ready to go!
 ### Yeah, it has many bugs:
 1. I found some screenshots in Youtube app works, some of them not.
 2. The generated stitched image from openCV is Squashed with wrong ratio.
-3. Now, it only could stitched like 3, 4 images at most. I'd like to look into this problem later to make it support more images as a scrollView.
+3. Now, it could only stitch 3, 4 images at most. I'd like to look into this problem later to make it support more images as a scrollView.
 4. I got interest at the algorithm of how openCV stitch the images, but I didn't find the code yet, maybe it is hided deeper, will dig more.
