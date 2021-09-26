@@ -110,6 +110,8 @@ class ViewController: UIViewController {
         title = "Image Stitcher"
         view.backgroundColor = .systemBackground
         
+        setBackgroundImage(imageName: "backgroundImage")
+        
         let removeButtonItem = UIBarButtonItem(image: UIImage(systemName: "trash")?.withTintColor(.systemRed).withRenderingMode(.alwaysOriginal), style: .done, target: self, action: #selector(removeButtonTapped))
         navigationItem.rightBarButtonItem = removeButtonItem
         
@@ -118,9 +120,9 @@ class ViewController: UIViewController {
         
         view.addSubview(importButton)
         view.addSubview(stitchButton)
-        view.addSubview(imageView1)
-        view.addSubview(imageView2)
         view.addSubview(imageView3)
+        view.addSubview(imageView2)
+        view.addSubview(imageView1)
         view.addSubview(longImageView)
 
         let g = view.safeAreaLayoutGuide
