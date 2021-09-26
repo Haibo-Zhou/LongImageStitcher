@@ -2,13 +2,13 @@
 
 The ability of this app is to stitch images/screenshots vertically into a new long image. For instance, when a user browses the posts in his/her twitter, they might want to take a few screenshots along scrolling the content. By import those screenshots into this app, the user could get a new generated long image, which combine all screenshots, and remove the overlapped parts between the screenshots.
 
-### what used?
+### What used?
 - This app utilize the `openCV` framework for image stitching function, and I used a class wrapper [OpenCVSwiftStitch](https://github.com/foundry/OpenCVSwiftStitch) to deal with image stitching.
 - By default, this wrapper could handle Panoramic pictures stitching, however I need stitching images vertically. Thus, I modify the code of `- (UIImage *)rotateToImageOrientation` in `UIImage+Rotate.m` to make it worked for vertical images stitched. In short, I convert image orientation from up, down, right to **left**.
 
 The screenshots below illustrated the workflow of this app.
 
-### 🍊 original screenshots
+### 🍊 Original screenshots
 <img src = "https://www.haibosfashion.com/images/longImageStitcher/001.png" width ="200" />  <img src = "https://www.haibosfashion.com/images/longImageStitcher/002.png" width ="200" />  <img src = "https://www.haibosfashion.com/images/longImageStitcher/003.png" width ="200" /> 
 
 &nbsp;
