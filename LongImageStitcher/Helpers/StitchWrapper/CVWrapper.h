@@ -15,7 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 + (UIImage*) processWithOpenCVImage1:(UIImage*)inputImage1 image2:(UIImage*)inputImage2;
 
-+ (UIImage*) processWithArray:(NSArray<UIImage*>*)imageArray;
++ (UIImage*) processWithArray:(NSArray<UIImage*>*)imageArray status:(int*)status;
 
 
 @end

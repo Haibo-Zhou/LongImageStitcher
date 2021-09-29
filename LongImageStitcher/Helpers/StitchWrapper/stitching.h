@@ -9,8 +9,15 @@
 #ifndef CVOpenTemplate_Header_h
 #define CVOpenTemplate_Header_h
 #include <opencv2/opencv.hpp>
+#include <opencv2/stitching.hpp>
 
-cv::Mat stitch (std::vector <cv::Mat> & images);
+// create this struct as I want to handle when "Can't stitch images..." happens
+struct StitchReturn {
+    cv::Mat mat;
+    cv::Stitcher::Status status;
+};
+
+StitchReturn stitchImages (std::vector <cv::Mat> & images);
 
 
 #endif
