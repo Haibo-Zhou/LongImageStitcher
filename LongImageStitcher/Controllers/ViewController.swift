@@ -183,11 +183,12 @@ class ViewController: UIViewController {
             let images = self?.images.map { $0.rotate(radians: .pi / -2) }
             guard let rotatedImages = images else { return }
             
-            // start to stitch the images with openCV wrapper
-            var status: Int32 = -1
+            // start to stitch the images
+            var status: Int32 = 20
             let stitchedImage = CVWrapper.process(with: rotatedImages, status: &status)
             
-            if status == 0 {
+            // rotate stitched image by 90 degree
+            if status == -1 {
                 DispatchQueue.main.async {
                     self?.removeSpinner()
                     self?.createAlert(message: "Can't stitch images", actionTitle: "Confirm")
@@ -197,18 +198,6 @@ class ViewController: UIViewController {
                 }
                 return
             }
-            
-            // rotate stitched image by 90 degree
-//            guard let rotatedImage = stitchedImage.rotate(radians: .pi / 2) else {
-//                DispatchQueue.main.async {
-//                    self?.removeSpinner()
-//                    self?.createAlert(message: "Can't stitch images", actionTitle: "Confirm")
-//                    self?.imageView1.isHidden = false
-//                    self?.imageView2.isHidden = false
-//                    self?.imageView3.isHidden = false
-//                }
-//                return
-//            }
             
             // rotate stitched image by 90 degree clockwise
             let rotatedImage = stitchedImage.rotate(radians: .pi / 2)

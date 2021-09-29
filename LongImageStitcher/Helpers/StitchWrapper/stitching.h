@@ -13,8 +13,8 @@
 
 // create this struct as I want to handle when "Can't stitch images..." happens
 struct StitchReturn {
-    cv::Mat mat;
-    cv::Stitcher::Status status;
+    cv::Mat pano;
+    int statusCode;
 };
 
 StitchReturn stitchImages (std::vector <cv::Mat> & images);

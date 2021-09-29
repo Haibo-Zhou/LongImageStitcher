@@ -30,7 +30,7 @@
     return result;
 }
 
-+ (UIImage*) processWithArray:(NSArray*)imageArray status:(int*)status
++ (UIImage*) processWithArray:(NSArray*)imageArray status:(int*)status;
 {
     if ([imageArray count]==0){
         NSLog (@"imageArray is empty");
@@ -42,25 +42,24 @@
         NSLog(@"image orientation: %ld", (long)[image imageOrientation]);
         
         if ([image isKindOfClass: [UIImage class]]) {
+            
+//            UIImage* rotatedImage = [image rotateToImageOrientation];
             // UIImage to cv::Mat, no alpha channel
             cv::Mat matImage = [image CVMat3];
-//            cv::Mat matImage = rotatedImage? [rotatedImage CVMat3] : [image CVMat3];
             NSLog (@"matImage: %@",image);
             matImages.push_back(matImage);
-            
         }
     }
     NSLog (@"stitching...");
     NSLog(@"💋 matImages count: %lu", matImages.size());
     StitchReturn stitchRet = stitchImages (matImages);
-    
-    if (stitchRet.status == 0) { // Cannot stitch images
-        *status = 0;
+    int statusCode = stitchRet.statusCode;
+    if (statusCode == -1) {
+        *status = -1;
     }
+    UIImage* newImage =  [UIImage imageWithCVMat:stitchRet.pano];
     
-    UIImage* result = [UIImage imageWithCVMat:stitchRet.mat];
-    NSLog(@"💋 result size: %@", NSStringFromCGSize(result.size));
-    return result;
+    return newImage;
 }
 
 

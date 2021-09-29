@@ -83,16 +83,17 @@ StitchReturn stitchImages (vector<Mat>& images)
     Stitcher stitcher = Stitcher::createDefault(try_use_gpu);
     Stitcher::Status status = stitcher.stitch(imgs, pano);
     
-    if (status != Stitcher::OK)
-        {
+    StitchReturn stitchRet;
+    if (status != Stitcher::OK) {
         cout << "Can't stitch images, error code = " << int(status) << endl;
-            //return 0;
-        }
-//    return pano;
-    StitchReturn retValue;
-    retValue.mat = pano;
-    retValue.status = status;
-    return retValue;
+        //return 0;
+        stitchRet.statusCode = -1;
+    } else {
+        stitchRet.statusCode = 0;
+    }
+    stitchRet.pano = pano;
+    
+    return stitchRet;
 }
 
 //// DEPRECATED CODE //////
