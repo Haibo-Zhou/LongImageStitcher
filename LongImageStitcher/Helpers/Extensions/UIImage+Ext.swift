@@ -8,7 +8,7 @@
 import UIKit
 
 extension UIImage {
-    func rotate(radians: Float) -> UIImage? {
+    func rotate(radians: Float) -> UIImage {
         var newSize = CGRect(origin: CGPoint.zero, size: self.size).applying(CGAffineTransform(rotationAngle: CGFloat(radians))).size
         // Trim off the extremely small float value to prevent core graphics from rounding it up
         newSize.width = floor(newSize.width)
@@ -16,7 +16,7 @@ extension UIImage {
         
         UIGraphicsBeginImageContextWithOptions(newSize, false, self.scale)
         guard let context = UIGraphicsGetCurrentContext() else {
-            return nil
+            return self
         }
         
         // Move origin to middle
@@ -29,6 +29,6 @@ extension UIImage {
         let newImage = UIGraphicsGetImageFromCurrentImageContext()
         UIGraphicsEndImageContext()
         
-        return newImage
+        return newImage ?? self
     }
 }

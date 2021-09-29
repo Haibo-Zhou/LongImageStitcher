@@ -179,12 +179,16 @@ class ViewController: UIViewController {
         
         self.showSpinner()
         DispatchQueue.global().async { [weak self] in
-            guard let images = self?.images else { return }
+            // rotate each image 90 degree counterclockwise before processing them
+            let images = self?.images.map { $0.rotate(radians: .pi / -2) }
+            guard let rotatedImages = images else { return }
+            
             // start to stitch the images
-            let stitchedImage = CVWrapper.process(with: images)
+            var status: Int32 = 20
+            let stitchedImage = CVWrapper.process(with: rotatedImages, status: &status)
             
             // rotate stitched image by 90 degree
-            guard let rotatedImage = stitchedImage.rotate(radians: .pi / 2) else {
+            if status == -1 {
                 DispatchQueue.main.async {
                     self?.removeSpinner()
                     self?.createAlert(message: "Can't stitch images", actionTitle: "Confirm")
@@ -194,6 +198,9 @@ class ViewController: UIViewController {
                 }
                 return
             }
+            
+            // rotate stitched image by 90 degree clockwise
+            let rotatedImage = stitchedImage.rotate(radians: .pi / 2)
             
             // save image to photos
             UIImageWriteToSavedPhotosAlbum(rotatedImage, nil, nil, nil)

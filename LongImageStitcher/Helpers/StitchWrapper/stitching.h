@@ -10,7 +10,12 @@
 #define CVOpenTemplate_Header_h
 #include <opencv2/opencv.hpp>
 
-cv::Mat stitch (std::vector <cv::Mat> & images);
+struct StitchReturn {
+    cv::Mat pano;
+    int statusCode;
+};
+
+StitchReturn stitchImages (std::vector <cv::Mat> & images);
 
 
 #endif

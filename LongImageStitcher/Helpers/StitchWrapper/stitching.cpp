@@ -67,6 +67,8 @@
 using namespace std;
 using namespace cv;
 
+
+
 bool try_use_gpu = false;
 vector<Mat> imgs;
 string result_name = "result.jpg";
@@ -74,19 +76,24 @@ string result_name = "result.jpg";
 void printUsage();
 int parseCmdArgs(int argc, char** argv);
 
-cv::Mat stitch (vector<Mat>& images)
+StitchReturn stitchImages (vector<Mat>& images)
 {
     imgs = images;
     Mat pano;
     Stitcher stitcher = Stitcher::createDefault(try_use_gpu);
     Stitcher::Status status = stitcher.stitch(imgs, pano);
     
-    if (status != Stitcher::OK)
-        {
+    StitchReturn stitchRet;
+    if (status != Stitcher::OK) {
         cout << "Can't stitch images, error code = " << int(status) << endl;
-            //return 0;
-        }
-    return pano;
+        //return 0;
+        stitchRet.statusCode = -1;
+    } else {
+        stitchRet.statusCode = 0;
+    }
+    stitchRet.pano = pano;
+    
+    return stitchRet;
 }
 
 //// DEPRECATED CODE //////
