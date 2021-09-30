@@ -7,10 +7,12 @@
 
 import UIKit
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, UIScrollViewDelegate {
     
     private lazy var images = [UIImage]()
     private var imagePicker: PHImagePicker!
+    private var longImageViewHighConstraint: NSLayoutConstraint!
+    private var rotatedImage: UIImage?
     
     lazy var importButton: UIButton = {
         let btn = UIButton()
@@ -46,7 +48,6 @@ class ViewController: UIViewController {
         imageView.backgroundColor = .myBlue
         imageView.rotate(angle: -20)
         imageView.contentMode = .scaleAspectFill
-//        imageView.image = UIImage(named: "001")
         return imageView
     }()
     
@@ -55,7 +56,6 @@ class ViewController: UIViewController {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         imageView.backgroundColor = .myPink
         imageView.contentMode = .scaleAspectFill
-//        imageView.image = UIImage(named: "002")
         return imageView
     }()
     
@@ -65,20 +65,23 @@ class ViewController: UIViewController {
         imageView.backgroundColor = .myGreen
         imageView.rotate(angle: 20)
         imageView.contentMode = .scaleAspectFill
-//        imageView.image = UIImage(named: "003")
         return imageView
     }()
     
     lazy var longImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        imageView.backgroundColor = .myGreen
-        imageView.contentMode = .scaleToFill
+        imageView.backgroundColor = .clear
+        imageView.contentMode = .scaleAspectFit
         imageView.isHidden = true
-        imageView.image = UIImage(named: "003")
-        
         return imageView
     }()
+    
+    lazy var scrollView: UIScrollView = {
+        let aView = UIScrollView()
+        return aView
+    }()
+    
     
     // MARK: - Life cycle
     
@@ -102,8 +105,23 @@ class ViewController: UIViewController {
         self.longImageView.isUserInteractionEnabled = true
     }
     
-    @objc func removeButtonTapped(_ sender: UIButton) {
-        // todo...
+    /// save generated long image to photos
+    @objc func saveButtonTapped(_ sender: UIButton) {
+        guard let image = self.rotatedImage else { return }
+        
+        showSpinner()
+        DispatchQueue.global().async { [weak self] in
+            UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+            DispatchQueue.main.async {
+                self?.removeSpinner()
+                self?.createAlert(message: "Image save complete", actionTitle: "Done")
+            }
+        }
+    }
+    
+    /// todo...
+    @objc func settingsButtonTapped(_ sender: UIButton) {
+        
     }
     
     func setViews() {
@@ -112,10 +130,10 @@ class ViewController: UIViewController {
         
         setBackgroundImage(imageName: "backgroundImage")
         
-        let removeButtonItem = UIBarButtonItem(image: UIImage(systemName: "trash")?.withTintColor(.systemRed).withRenderingMode(.alwaysOriginal), style: .done, target: self, action: #selector(removeButtonTapped))
-        navigationItem.rightBarButtonItem = removeButtonItem
+        let saveButtonItem = UIBarButtonItem(image: UIImage(systemName: "square.and.arrow.down")?.withTintColor(.systemRed).withRenderingMode(.alwaysOriginal), style: .done, target: self, action: #selector(saveButtonTapped))
+        navigationItem.rightBarButtonItem = saveButtonItem
         
-        let settingsButtonItem = UIBarButtonItem(image: UIImage(systemName: "gearshape")?.withTintColor(.myBlue).withRenderingMode(.alwaysOriginal), style: .done, target: self, action: #selector(removeButtonTapped))
+        let settingsButtonItem = UIBarButtonItem(image: UIImage(systemName: "gearshape")?.withTintColor(.myBlue).withRenderingMode(.alwaysOriginal), style: .done, target: self, action: #selector(settingsButtonTapped))
         navigationItem.leftBarButtonItem = settingsButtonItem
         
         view.addSubview(importButton)
@@ -126,6 +144,9 @@ class ViewController: UIViewController {
         view.addSubview(longImageView)
 
         let g = view.safeAreaLayoutGuide
+        longImageViewHighConstraint = longImageView.heightAnchor.constraint(equalTo: longImageView.widthAnchor, multiplier: 3)
+        longImageViewHighConstraint.isActive = true
+        
         NSLayoutConstraint.activate([
             NSLayoutConstraint(item: importButton, attribute: .centerX, relatedBy: .equal, toItem: g, attribute: .trailing, multiplier: 0.3, constant: 0),
             importButton.bottomAnchor.constraint(equalTo: g.bottomAnchor, constant: -50),
@@ -154,8 +175,7 @@ class ViewController: UIViewController {
             
             longImageView.topAnchor.constraint(equalTo: g.topAnchor, constant: 60),
             longImageView.centerXAnchor.constraint(equalTo: g.centerXAnchor),
-            longImageView.widthAnchor.constraint(equalTo: g.widthAnchor, multiplier: 0.35),
-            longImageView.heightAnchor.constraint(equalTo: longImageView.widthAnchor, multiplier: 3)
+            longImageView.widthAnchor.constraint(equalTo: g.widthAnchor, multiplier: 0.35)
         ])
     }
     
@@ -171,6 +191,7 @@ class ViewController: UIViewController {
         self.imagePicker.present(from: sender)
     }
     
+    /// stitch images
     @objc func stitchButtonTapped(sender: UIButton) {
         if self.images.count <= 1 {
             createAlert(message: "Please select at least 2 images", actionTitle: "Confirm")
@@ -187,7 +208,7 @@ class ViewController: UIViewController {
             var status: Int32 = 20
             let stitchedImage = CVWrapper.process(with: rotatedImages, status: &status)
             
-            // rotate stitched image by 90 degree
+            // if Stitch::Status returned from C++ code was NOK
             if status == -1 {
                 DispatchQueue.main.async {
                     self?.removeSpinner()
@@ -201,9 +222,7 @@ class ViewController: UIViewController {
             
             // rotate stitched image by 90 degree clockwise
             let rotatedImage = stitchedImage.rotate(radians: .pi / 2)
-            
-            // save image to photos
-            UIImageWriteToSavedPhotosAlbum(rotatedImage, nil, nil, nil)
+            self?.rotatedImage = rotatedImage
 
             DispatchQueue.main.async {
                 for imageView in [self?.imageView1, self?.imageView2, self?.imageView3] {
@@ -229,24 +248,44 @@ class ViewController: UIViewController {
         self.present(alert, animated: true)
     }
     
+    func setupScrollView(with imageView: UIImageView) {
+        let newImageView = UIImageView()
+        newImageView.contentMode = .scaleAspectFit
+        newImageView.image = imageView.image
+        
+        // give scrollView frame equals to superview(self.view) size,
+        // and set its contentSize bigger then scrollView size to make it scallable
+        scrollView.frame = CGRect(x: 0, y: 0, width: UIScreen.main.bounds.width, height: UIScreen.main.bounds.height)
+        scrollView.addSubview(newImageView)
+        scrollView.backgroundColor = .brown
+        scrollView.delegate = self
+        scrollView.isUserInteractionEnabled = true
+        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
+        scrollView.addGestureRecognizer(tap)
+        view.addSubview(scrollView)
+        guard let height = imageView.image?.size.height else { return }
+        guard let width = imageView.image?.size.width else { return }
+        let ratio = width / height
+        let onScreenWidth = UIScreen.main.bounds.width - 20 * 2
+        let onScreenHeight = onScreenWidth / ratio
+        // give a litte padding(40 points) on the bottom
+        scrollView.contentSize = CGSize(width: onScreenWidth, height: onScreenHeight + 40)
+        newImageView.frame = CGRect(x: 20, y: 20, width: UIScreen.main.bounds.width - 40, height: onScreenHeight)
+    }
+    
     // MARK: - show image on fullscreen when a tapping happened
     
     @objc func imageTapped(_ sender: UITapGestureRecognizer) {
         guard let imageView = sender.view as? UIImageView else { return }
-        let newImageView = UIImageView(image: imageView.image)
-        newImageView.frame = CGRect(x: 40, y: 40, width: UIScreen.main.bounds.width - 40 * 2, height: UIScreen.main.bounds.height - 40 * 2)
-        newImageView.backgroundColor = .black
-        newImageView.contentMode = .scaleToFill
-        newImageView.isUserInteractionEnabled = true
-        let tap = UITapGestureRecognizer(target: self, action: #selector(dismissFullscreenImage))
-        newImageView.addGestureRecognizer(tap)
+        setupScrollView(with: imageView)
         
+        // add animation when showing scrollView
         self.navigationController?.isNavigationBarHidden = true
         UIView.transition(with: view,
                           duration: 0.33,
                           options: [.curveEaseOut, .transitionFlipFromBottom],
                           animations: {
-                            self.view.addSubview(newImageView)
+                            self.view.addSubview(self.scrollView)
                           },
                           completion: nil)
     }
@@ -254,6 +293,7 @@ class ViewController: UIViewController {
     @objc func dismissFullscreenImage(_ sender: UITapGestureRecognizer) {
         self.navigationController?.isNavigationBarHidden = false
         
+        // add animation when remove scrollView
         UIView.transition(with: view,
                           duration: 0.33,
                           options: [.curveEaseOut, .transitionFlipFromBottom],
